@@ -5,7 +5,7 @@
       "src": "server.js",
       "use": "@vercel/node",
       "config": {
-        "maxLambdaMemory": 512 // Ajuste conforme necessário
+        "maxLambdaMemory": 512
       }
     }
   ],
