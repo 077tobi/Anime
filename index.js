@@ -1,45 +1,33 @@
 const express = require('express');
-const axios = require('axios'); // Importa a biblioteca axios para requisições HTTP
-const cheerio = require('cheerio'); // Importa a biblioteca cheerio para análise de HTML
+const youtubeSearch = require('youtube-search-api');
+
 const app = express();
 const port = 3000;
 
-// Use o body-parser para analisar o corpo das requisições
-app.use(bodyParser.json());
+// Define a API Key do YouTube
+const apiKey = 'AIzaSyCnvpTslrEESSwV3KQp28r6wIF-29DnVw8'; // Substitua pela sua API Key
 
-// Rota para obter a lista de episódios
-app.get('/episodios/:animeLink', async (req, res) => {
-  const animeLink = req.params.animeLink;
+// Rota para buscar vídeos do YouTube
+app.get('/search', async (req, res) => {
+  const searchTerm = req.query.q;
+  if (!searchTerm) {
+    return res.status(400).send('O parâmetro "q" é obrigatório.');
+  }
 
   try {
-    // Faz a requisição HTTP para o link do anime
-    const response = await axios.get(animeLink);
-    const html = response.data;
-
-    // Analisa o HTML usando cheerio
-    const $ = cheerio.load(html);
-
-    // Seleciona os elementos que representam os links dos episódios
-    const itemElements = $('div.div_video_list a.lEp');
-
-    const itemInfoList = [];
-    itemElements.each((index, element) => {
-      const link = $(element).attr('href');
-      const titulo = $(element).text();
-
-      itemInfoList.push({
-        "link": link,
-        "titulo": titulo
-      });
+    const results = await youtubeSearch.search({
+      key: apiKey,
+      term: searchTerm,
+      maxResults: 10,
     });
 
-    res.json(itemInfoList);
+    // Retorna os resultados da busca
+    res.json(results);
   } catch (error) {
-    console.error("Erro ao obter episódios:", error);
-    res.status(500).json({ error: "Erro ao obter episódios" });
+    res.status(500).send('Erro ao buscar no YouTube: ' + error.message);
   }
 });
 
 app.listen(port, () => {
-  console.log(`Servidor rodando na porta ${port}`);
+  console.log(`API rodando na porta ${port}`);
 });
